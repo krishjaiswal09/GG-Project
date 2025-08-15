@@ -65,7 +65,7 @@ To log in as an admin, use the following credentials:
 
 ```
 Email: adminuser@gmail.com
-Password: admin123456
+Password: 123456
 ```
 
 ---
@@ -87,3 +87,4 @@ npm run dev
 ```
 
 ⚠️ **Important:** The project might take a while to load initially, depending on your network and environment.
+
