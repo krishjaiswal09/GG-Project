@@ -52,6 +52,14 @@ export const TodoProvider = ({ children }) => {
       setLoading(true);
       const { data } = await tasksAPI.createTask(todo);
       setTodos((prev) => [data, ...prev]);
+      
+      // Get current read todos from localStorage
+      const readTodosStr = localStorage.getItem('readTodos');
+      const readTodos = readTodosStr ? JSON.parse(readTodosStr) : [];
+      
+      // Don't add the new todo to read todos so it will show as a notification
+      localStorage.setItem('readTodos', JSON.stringify(readTodos));
+      
       setError(null);
       return true;
     } catch (err) {
@@ -129,4 +137,4 @@ export const TodoProvider = ({ children }) => {
       {children}
     </TodoContext.Provider>
   );
-}; 
+};

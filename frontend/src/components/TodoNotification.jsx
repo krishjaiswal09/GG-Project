@@ -1,19 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { CiBellOn } from "react-icons/ci";
 import { useTodo } from "../contexts/TodoContext";
 
 function TodoNotification() {
   const { todos } = useTodo(); 
   const [isOpen, setIsOpen] = useState(false);
+  const [newNotifications, setNewNotifications] = useState(false);
+  const [readTodos, setReadTodos] = useState(() => {
+    const saved = localStorage.getItem('readTodos');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+    return date.toLocaleDateString("en-GB");
   };
 
   const getStatusBadge = (completed) =>
@@ -27,11 +28,29 @@ function TodoNotification() {
       </span>
     );
 
+  useEffect(() => {
+    // Check if there are any todos that haven't been read yet
+    const unreadTodos = todos.filter(todo => !readTodos.includes(todo._id));
+    setNewNotifications(unreadTodos.length > 0);
+  }, [todos, readTodos]);
+
+  const handleOpenNotifications = () => {
+    setIsOpen(true);
+    // Mark all todos as read when opening notifications
+    const todoIds = todos.map(todo => todo._id);
+    setReadTodos(todoIds);
+    localStorage.setItem('readTodos', JSON.stringify(todoIds));
+    setNewNotifications(false);
+  };
+
   return (
     <div className="relative">
-      {/* Bell Button */}
-      <button onClick={() => setIsOpen(true)}>
+      {/* Bell Button with notification indicator */}
+      <button onClick={handleOpenNotifications} className="relative">
         <CiBellOn className="w-6 h-6 cursor-pointer text-gray-700" />
+        {newNotifications && (
+          <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
+        )}
       </button>
 
       {/* Drawer */}
@@ -91,7 +110,7 @@ function TodoNotification() {
 
                 {todo.dueDate && (
                   <div className="text-sm text-gray-500">
-                    {formatDate(todo.dueDate)} {todo.dueTime || ""}
+                    {formatDate(todo.dueDate)}{todo.dueTime && ` ${todo.dueTime}`}
                   </div>
                 )}
               </div>

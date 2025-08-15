@@ -1,18 +1,25 @@
 import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { TodoProvider, useTodo } from "./contexts/TodoContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { SearchProvider } from "./contexts/SearchContext";
+import { AdminProvider, useAdmin } from "./contexts/AdminContext";
 import TodoForm from "./components/TodoForm";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Header from "./components/Header";
 import TodoActivity from "./components/TodoActivity";
+import AdminLayout from "./components/AdminLayout";
+import AdminDashboard from "./components/AdminDashboard";
+import AdminUsers from "./components/AdminUsers";
 
 // Main Todo App Component
 function TodoApp() {
   const [filter, setFilter] = useState("all");
   const { user } = useAuth();
   const { todos, loading, error } = useTodo();
-
+  const { isAdmin } = useAdmin();
+  
   // Filter todos based on current filter
   const filteredTodos = todos.filter((todo) => {
     if (filter === "all") return true;
@@ -48,25 +55,50 @@ function TodoApp() {
   );
 }
 
+// Admin Routes Component
+function AdminRoutes() {
+  const { isAdmin } = useAdmin();
+  
+  if (!isAdmin) {
+    return <Navigate to="/" />;
+  }
+  
+  return (
+    <AdminLayout>
+      <Routes>
+        <Route path="/" element={<AdminDashboard />} />
+        <Route path="/users" element={<AdminUsers />} />
+      </Routes>
+    </AdminLayout>
+  );
+}
+
 // App Wrapper with Authentication
 function App() {
   const [showRegister, setShowRegister] = useState(false);
 
   return (
-    <AuthProvider>
-      <TodoProvider>
-        <AppContent
-          showRegister={showRegister}
-          setShowRegister={setShowRegister}
-        />
-      </TodoProvider>
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <AdminProvider>
+          <TodoProvider>
+            <SearchProvider>
+              <AppContent
+                showRegister={showRegister}
+                setShowRegister={setShowRegister}
+              />
+            </SearchProvider>
+          </TodoProvider>
+        </AdminProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 
 // Component to conditionally render Login/Register or TodoApp
 function AppContent({ showRegister, setShowRegister }) {
   const { isAuthenticated, loading } = useAuth();
+  const { isAdmin } = useAdmin();
 
   if (loading) {
     return (
@@ -112,7 +144,22 @@ function AppContent({ showRegister, setShowRegister }) {
     );
   }
 
-  return <TodoApp />;
+  // If user is admin, redirect to admin panel, otherwise show todo app
+  return (
+    <Routes>
+      {isAdmin ? (
+        <>
+          <Route path="/admin/*" element={<AdminRoutes />} />
+          <Route path="*" element={<Navigate to="/admin" />} />
+        </>
+      ) : (
+        <>
+          <Route path="/" element={<TodoApp />} />
+          <Route path="*" element={<Navigate to="/" />} />
+        </>
+      )}
+    </Routes>
+  );
 }
 
 export default App;
