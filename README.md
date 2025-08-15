@@ -75,8 +75,3 @@ npm install
 npm run dev
 ```
 
-
-Credits
-
-Built with ❤️ using React & Tailwind.
-
