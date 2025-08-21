@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { TodoProvider, useTodo } from "./contexts/TodoContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { SearchProvider } from "./contexts/SearchContext";
 import { AdminProvider, useAdmin } from "./contexts/AdminContext";
 import TodoForm from "./components/TodoForm";
 import Login from "./components/Login";
@@ -13,24 +12,31 @@ import AdminLayout from "./components/AdminLayout";
 import AdminDashboard from "./components/AdminDashboard";
 import AdminUsers from "./components/AdminUsers";
 
-// Main Todo App Component
 function TodoApp() {
   const [filter, setFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuth();
   const { todos, loading, error } = useTodo();
   const { isAdmin } = useAdmin();
-  
-  // Filter todos based on current filter
+
   const filteredTodos = todos.filter((todo) => {
-    if (filter === "all") return true;
-    if (filter === "completed") return todo.completed;
-    if (filter === "active") return !todo.completed;
-    return true;
+    const matchesFilter =
+      filter === "all"
+        ? true
+        : filter === "completed"
+        ? todo.completed
+        : !todo.completed;
+
+    const matchesSearch =
+      todo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      todo.description.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesFilter && matchesSearch;
   });
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
       <div className="w-full px-4 py-6">
         <h1 className="text-3xl font-bold mb-8 text-black">
           Hello, {user.name}
@@ -39,10 +45,13 @@ function TodoApp() {
         <div className="mx-2">
           <TodoActivity todos={todos} filteredTodos={filteredTodos} />
         </div>
-        
-        {/* TodoForm now includes the integrated table */}
+
         <div className="mb-6 mx-2">
-          <TodoForm filter={filter} setFilter={setFilter} />
+          <TodoForm
+            filter={filter}
+            setFilter={setFilter}
+            searchQuery={searchQuery}
+          />
         </div>
 
         {error && (
@@ -55,14 +64,10 @@ function TodoApp() {
   );
 }
 
-// Admin Routes Component
 function AdminRoutes() {
   const { isAdmin } = useAdmin();
-  
-  if (!isAdmin) {
-    return <Navigate to="/" />;
-  }
-  
+  if (!isAdmin) return <Navigate to="/" />;
+
   return (
     <AdminLayout>
       <Routes>
@@ -73,7 +78,6 @@ function AdminRoutes() {
   );
 }
 
-// App Wrapper with Authentication
 function App() {
   const [showRegister, setShowRegister] = useState(false);
 
@@ -82,12 +86,10 @@ function App() {
       <AuthProvider>
         <AdminProvider>
           <TodoProvider>
-            <SearchProvider>
-              <AppContent
-                showRegister={showRegister}
-                setShowRegister={setShowRegister}
-              />
-            </SearchProvider>
+            <AppContent
+              showRegister={showRegister}
+              setShowRegister={setShowRegister}
+            />
           </TodoProvider>
         </AdminProvider>
       </AuthProvider>
@@ -95,7 +97,6 @@ function App() {
   );
 }
 
-// Component to conditionally render Login/Register or TodoApp
 function AppContent({ showRegister, setShowRegister }) {
   const { isAuthenticated, loading } = useAuth();
   const { isAdmin } = useAdmin();
@@ -131,20 +132,13 @@ function AppContent({ showRegister, setShowRegister }) {
   }
 
   if (!isAuthenticated) {
-    return (
-      <div>
-        <div>
-          {showRegister ? (
-            <Register onSwitchToLogin={() => setShowRegister(false)} />
-          ) : (
-            <Login onSwitchToRegister={() => setShowRegister(true)} />
-          )}
-        </div>
-      </div>
+    return showRegister ? (
+      <Register onSwitchToLogin={() => setShowRegister(false)} />
+    ) : (
+      <Login onSwitchToRegister={() => setShowRegister(true)} />
     );
   }
 
-  // If user is admin, redirect to admin panel, otherwise show todo app
   return (
     <Routes>
       {isAdmin ? (

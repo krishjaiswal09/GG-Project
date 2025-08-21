@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useTodo } from "../contexts/TodoContext";
-import { useSearch } from "../contexts/SearchContext";
 import TodoItem from "./TodoItem";
 import TodoDetail from "./TodoDetail";
 
-function TodoForm({ filter, setFilter }) {
+function TodoForm({ filter, setFilter, searchQuery }) {
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -18,15 +17,16 @@ function TodoForm({ filter, setFilter }) {
   const [selectedTodo, setSelectedTodo] = useState(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  const { searchQuery } = useSearch();
   const { todos, addTodo, updateTodo, deleteTodo, toggleComplete, loading } =
     useTodo();
   const filterDropdownRef = useRef(null);
 
-  // Close filter dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
+      if (
+        filterDropdownRef.current &&
+        !filterDropdownRef.current.contains(event.target)
+      ) {
         setIsFilterOpen(false);
       }
     };
@@ -35,12 +35,19 @@ function TodoForm({ filter, setFilter }) {
   }, []);
 
   const resetForm = () => {
-    setForm({ title: "", description: "", priority: "Medium", dueDate: "", dueTime: "" });
+    setForm({
+      title: "",
+      description: "",
+      priority: "Medium",
+      dueDate: "",
+      dueTime: "",
+    });
     setIsModalOpen(false);
     setEditingTodo(null);
   };
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const add = async (e) => {
     e.preventDefault();
@@ -82,7 +89,8 @@ function TodoForm({ filter, setFilter }) {
     setIsDetailOpen(false);
   };
 
-  const formatDate = (dateString) => (dateString ? new Date(dateString).toLocaleDateString("en-GB") : "");
+  const formatDate = (dateString) =>
+    dateString ? new Date(dateString).toLocaleDateString("en-GB") : "";
 
   const getStatusBadge = (completed) =>
     completed ? (
@@ -97,13 +105,15 @@ function TodoForm({ filter, setFilter }) {
 
   const filteredTodos = todos.filter((todo) => {
     const statusMatch =
-      filter === "all" ? true : filter === "completed" ? todo.completed : !todo.completed;
+      filter === "all"
+        ? true
+        : filter === "completed"
+        ? todo.completed
+        : !todo.completed;
 
     const searchMatch = searchQuery
       ? todo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        todo.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (todo.priority && todo.priority.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        (todo.dueDate && formatDate(todo.dueDate).includes(searchQuery))
+        todo.description.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
 
     return statusMatch && searchMatch;
@@ -124,9 +134,11 @@ function TodoForm({ filter, setFilter }) {
             <h2 className="text-lg font-semibold text-gray-800">
               {searchQuery
                 ? `Search Results (${filteredTodos.length})`
-                : `All Todos${filter !== "all" ? ` - ${filter.charAt(0).toUpperCase() + filter.slice(1)}` : ""}`}
+                : `All Todos${filter !== "all" ? ` - ${filter}` : ""}`}
             </h2>
-            <p className="text-sm text-gray-500">Last Updated: {new Date().toLocaleString()}</p>
+            <p className="text-sm text-gray-500">
+              Last Updated: {new Date().toLocaleString()}
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
@@ -134,20 +146,10 @@ function TodoForm({ filter, setFilter }) {
             <div className="relative" ref={filterDropdownRef}>
               <button
                 type="button"
-                className="bg-gray-50 hover:bg-gray-100 rounded-lg pw-2 px-5 py-1.5 text-sm font-medium text-gray-700 flex items-center min-w-28 transition-colors"
+                className="bg-gray-50 hover:bg-gray-100 rounded-lg px-5 py-1.5 text-sm font-medium text-gray-700 flex items-center min-w-28 transition-colors"
                 onClick={() => setIsFilterOpen(!isFilterOpen)}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-green-500 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L14 14.414V19a1 1 0 01-1.447.894l-4-2A1 1 0 018 17v-2.586L3.293 6.707A1 1 0 013 6V4z" />
-                </svg>
                 Filter
-                <span className={`${isFilterOpen ? "rotate-180" : ""}`}></span>
               </button>
 
               {isFilterOpen && (
@@ -157,7 +159,9 @@ function TodoForm({ filter, setFilter }) {
                       key={option.value}
                       type="button"
                       className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-50 ${
-                        filter === option.value ? "bg-blue-50 text-blue-700 font-medium" : "text-gray-700"
+                        filter === option.value
+                          ? "bg-blue-50 text-blue-700 font-medium"
+                          : "text-gray-700"
                       }`}
                       onClick={() => {
                         setFilter(option.value);
@@ -174,7 +178,10 @@ function TodoForm({ filter, setFilter }) {
             {/* Add Todo */}
             <button
               type="button"
-              onClick={() => { resetForm(); setIsModalOpen(true); }}
+              onClick={() => {
+                resetForm();
+                setIsModalOpen(true);
+              }}
               className="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
             >
               + Add Todo
@@ -188,17 +195,33 @@ function TodoForm({ filter, setFilter }) {
             <thead className="bg-gray-50 rounded-lg">
               <tr>
                 {["Todo", "Due Date", "Status", "Actions"].map((header) => (
-                  <th key={header} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{header}</th>
+                  <th
+                    key={header}
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
+                    {header}
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="4" className="px-6 py-4 text-center">Loading tasks...</td></tr>
+                <tr>
+                  <td colSpan="4" className="px-6 py-4 text-center">
+                    Loading tasks...
+                  </td>
+                </tr>
               ) : filteredTodos.length === 0 ? (
-                <tr><td colSpan="4" className="px-6 py-4 text-center text-gray-500">
-                  {searchQuery ? `No tasks found matching "${searchQuery}"` : "No tasks to show"}
-                </td></tr>
+                <tr>
+                  <td
+                    colSpan="4"
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    {searchQuery
+                      ? `No tasks found matching "${searchQuery}"`
+                      : "No tasks to show"}
+                  </td>
+                </tr>
               ) : (
                 filteredTodos.map((todo) => (
                   <TodoItem
@@ -218,50 +241,77 @@ function TodoForm({ filter, setFilter }) {
         </div>
       </div>
 
-      {/* Modal Section */}
+      {/* Modal and Detail drawer logic unchanged */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 transition-opacity duration-300">
-          <div className="absolute inset-0 bg-black bg-opacity-50" onClick={resetForm} />
-          <div className="absolute top-0 right-0 h-full w-full max-w-md bg-white shadow-xl transform transition-transform duration-300 ease-in-out translate-x-0">
+          <div
+            className="absolute inset-0 bg-black bg-opacity-50"
+            onClick={resetForm}
+          />
+          <div className="absolute top-0 right-0 h-full w-full max-w-md bg-white shadow-xl transition-transform duration-300 translate-x-0">
             <div className="h-full flex flex-col overflow-hidden">
-              <div className="flex justify-between items-center p-6 border-b border-gray-200 flex-shrink-0">
-                <h3 className="text-lg font-semibold text-gray-900">{editingTodo ? "Edit Todo" : "Add Todo"}</h3>
-                <button onClick={resetForm} className="text-gray-400 hover:text-gray-600 transition-colors">✕</button>
+              <div className="flex justify-between items-center p-6 border-b border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {editingTodo ? "Edit Todo" : "Add Todo"}
+                </h3>
+                <button
+                  onClick={resetForm}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  ✕
+                </button>
               </div>
+
               <div className="flex-1 overflow-y-auto p-6 space-y-4">
                 {["title", "description", "dueDate", "dueTime"].map((field) => (
                   <div key={field}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {field === "title" ? "Title" : field === "description" ? "Description" : field === "dueDate" ? "Due Date" : "Due Time"}
-                      {(field === "title" || field === "description") && <span className="text-red-500">*</span>}
+                      {field === "dueDate"
+                        ? "Due Date"
+                        : field === "dueTime"
+                        ? "Due Time"
+                        : field.charAt(0).toUpperCase() + field.slice(1)}
+                      {(field === "title" || field === "description") && (
+                        <span className="text-red-500">*</span>
+                      )}
                     </label>
+
                     {field === "description" ? (
                       <textarea
                         name={field}
-                        placeholder={`Enter ${field.charAt(0).toUpperCase() + field.slice(1)}`}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white resize-none"
                         value={form[field]}
                         onChange={handleChange}
                         rows="4"
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"
                       />
                     ) : (
                       <input
-                        type={field === "dueDate" ? "date" : field === "dueTime" ? "time" : "text"}
+                        type={
+                          field.includes("Date")
+                            ? "date"
+                            : field.includes("Time")
+                            ? "time"
+                            : "text"
+                        }
                         name={field}
-                        placeholder={`Enter ${field.charAt(0).toUpperCase() + field.slice(1)}`}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors bg-white"
                         value={form[field]}
                         onChange={handleChange}
+                        className="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-green-500"
                       />
                     )}
                   </div>
                 ))}
+
                 <div className="flex justify-end pt-4">
                   <button
                     type="button"
                     onClick={add}
                     disabled={loading || !form.title || !form.description}
-                    className={`px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium ${loading || !form.title || !form.description ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium ${
+                      loading || !form.title || !form.description
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
                   >
                     {editingTodo ? "Update Todo" : "Create Todo"}
                   </button>
@@ -272,7 +322,6 @@ function TodoForm({ filter, setFilter }) {
         </div>
       )}
 
-      {/* Todo Detail */}
       <TodoDetail
         todo={selectedTodo}
         isOpen={isDetailOpen}

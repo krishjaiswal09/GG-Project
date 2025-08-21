@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useAdmin } from "../contexts/AdminContext";
-import { useSearch } from "../contexts/SearchContext";
 import { Link } from "react-router-dom";
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { CiSearch } from "react-icons/ci";
@@ -11,10 +10,9 @@ import { MdAdminPanelSettings } from "react-icons/md";
 import TodoProfile from "./TodoProfile";
 import TodoNotification from "./TodoNotification";
 
-function Header() {
+function Header({ searchQuery, setSearchQuery }) {
   const { user, logout } = useAuth();
   const { isAdmin } = useAdmin();
-  const { searchQuery, setSearchQuery } = useSearch();
   const [isOpen, setIsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
@@ -25,6 +23,7 @@ function Header() {
           <div className="flex items-center gap-10">
             <h1 className="text-2xl font-bold text-black">GREEDYGAME</h1>
 
+            {/* Search Input */}
             <div className="relative">
               <CiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-700 w-5 h-5" />
               <input
@@ -54,7 +53,6 @@ function Header() {
                 className="flex items-center gap-1 text-black font-medium focus:outline-none"
                 aria-expanded={isOpen}
               >
-                {/* ✅ Always use user.photoURL from context */}
                 <div className="relative">
                   <img
                     src={user.photoURL || "/assets/img2.jpg"}
@@ -116,7 +114,7 @@ function Header() {
         </div>
       </header>
 
-      {/* ✅ TodoProfile panel */}
+      {/* Profile Sidebar */}
       <TodoProfile
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}

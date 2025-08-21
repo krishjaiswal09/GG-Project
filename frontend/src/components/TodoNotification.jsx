@@ -3,19 +3,19 @@ import { CiBellOn } from "react-icons/ci";
 import { useTodo } from "../contexts/TodoContext";
 
 function TodoNotification() {
-  const { todos } = useTodo(); 
+  const { todos } = useTodo();
   const [isOpen, setIsOpen] = useState(false);
   const [newNotifications, setNewNotifications] = useState(false);
   const [readTodos, setReadTodos] = useState(() => {
-    const saved = localStorage.getItem('readTodos');
+    const saved = localStorage.getItem("readTodos");
     return saved ? JSON.parse(saved) : [];
   });
 
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB");
-  };
+  // const formatDate = (dateString) => {
+  //   if (!dateString) return "";
+  //   const date = new Date(dateString);
+  //   return date.toLocaleDateString("en-GB");
+  // };
 
   const getStatusBadge = (completed) =>
     completed ? (
@@ -30,16 +30,16 @@ function TodoNotification() {
 
   useEffect(() => {
     // Check if there are any todos that haven't been read yet
-    const unreadTodos = todos.filter(todo => !readTodos.includes(todo._id));
+    const unreadTodos = todos.filter((todo) => !readTodos.includes(todo._id));
     setNewNotifications(unreadTodos.length > 0);
   }, [todos, readTodos]);
 
   const handleOpenNotifications = () => {
     setIsOpen(true);
     // Mark all todos as read when opening notifications
-    const todoIds = todos.map(todo => todo._id);
+    const todoIds = todos.map((todo) => todo._id);
     setReadTodos(todoIds);
-    localStorage.setItem('readTodos', JSON.stringify(todoIds));
+    localStorage.setItem("readTodos", JSON.stringify(todoIds));
     setNewNotifications(false);
   };
 
@@ -108,11 +108,12 @@ function TodoNotification() {
                   {todo.description || ""}
                 </p>
 
-                {todo.dueDate && (
+                {/* {todo.dueDate && (
                   <div className="text-sm text-gray-500">
-                    {formatDate(todo.dueDate)}{todo.dueTime && ` ${todo.dueTime}`}
+                    {formatDate(todo.dueDate)}
+                    {todo.dueTime && ` ${todo.dueTime}`}
                   </div>
-                )}
+                )} */}
               </div>
             ))}
           </div>
@@ -123,4 +124,3 @@ function TodoNotification() {
 }
 
 export default TodoNotification;
-
