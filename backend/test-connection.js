@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import 'dotenv/config';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://krishjaiswal67890:OBK2i9qT4eie1Hv2@cluster0.4bzzc6t.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI || 
 
 console.log('Attempting to connect to MongoDB with URI:', MONGODB_URI);
 
